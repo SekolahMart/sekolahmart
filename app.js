@@ -1,9 +1,22 @@
 let cat = 'Semua';
 let products = [];
-async function load(){
+let cart = JSON.parse(localStorage.getItem('sm_cart') || '[]');
+
+function rp(n) {
+  return 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+}
+
+async function load() {
   const info = document.getElementById('info');
   const grid = document.getElementById('grid');
+
+  if (!info || !grid) {
+    console.error('Elemen #info atau #grid tidak ditemukan.');
+    return;
+  }
+
   info.textContent = 'Memuat produk...';
+
   try {
     const { data, error } = await sb
       .from('products')
@@ -19,85 +32,168 @@ async function load(){
     }
 
     products = data || [];
+    render();
 
-    info.textContent = products.length + ' produk';
-
-} catch (error) {
-  console.error('Connection error:', error);
-  info.textContent = 'Error koneksi: ' + error.message;
-  grid.innerHTML = '<p>Gagal terhubung ke Supabase.</p>';
+  } catch (error) {
+    console.error('Connection error:', error);
+    info.textContent = 'Error koneksi: ' + error.message;
+    grid.innerHTML = '<p>Gagal terhubung ke Supabase.</p>';
+  }
 }
 
-function render(){
-  let q=(document.getElementById('q').value||'').toLowerCase();
+function render() {
+  const qEl = document.getElementById('q');
+  const grid = document.getElementById('grid');
+  const info = document.getElementById('info');
+  const cartCount = document.getElementById('cartCount');
 
-  let a=products.filter(p=>
-    (cat==='Semua'||p.category===cat)&&
-    p.name.toLowerCase().includes(q)
-  );
+  if (!grid) return;
 
-  document.getElementById('info').textContent=a.length+' produk';
-      <article class="card">
-        <img class="photo"
-          src="${p.image_url||'assets/pensil_2b.jpg'}">
-        <div class="info">
-          <div class="cat">${p.category}</div>
-          <div class="name">${p.name}</div>
-          <div class="price">${rp(p.price)}</div>
-          <button class="buy" onclick="add(${p.id})">
-            + Keranjang
-          </button>
+  const q = (qEl?.value || '').toLowerCase().trim();
+
+  const filtered = products.filter(p => {
+    const name = String(p.name || '').toLowerCase();
+    const category = String(p.category || '');
+
+    return (
+      (cat === 'Semua' || category === cat) &&
+      name.includes(q)
+    );
+  });
+
+  grid.innerHTML = filtered.map(p => `
+    <article class="card">
+
+      <img
+        class="photo"
+        src="${p.image_url || 'assets/pensil_2b.jpg'}"
+        alt="${p.name || 'Produk'}"
+        onerror="this.src='assets/pensil_2b.jpg'"
+      >
+
+      <div class="info">
+
+        <div class="cat">
+          ${p.category || 'Umum'}
         </div>
-      </article>
-    `).join('')||'<p>Tidak ada produk.</p>';
 
-  document.getElementById('cartCount').textContent=
-    cart.reduce((a,x)=>a+x.qty,0);
+        <div class="name">
+          ${p.name || 'Produk'}
+        </div>
+
+        <div class="price">
+          ${rp(p.price)}
+        </div>
+
+        <button
+          class="buy"
+          onclick="add(${JSON.stringify(p.id)})">
+          + Keranjang
+        </button>
+
+      </div>
+
+    </article>
+  `).join('') || '<p>Tidak ada produk.</p>';
+
+  if (info) {
+    info.textContent = filtered.length + ' produk';
+  }
+
+  if (cartCount) {
+    cartCount.textContent =
+      cart.reduce(
+        (total, item) => total + Number(item.qty || 0),
+        0
+      );
+  }
 }
 
-function add(id){
-  let x=cart.find(c=>c.id===id);
+function add(id) {
+  const existing =
+    cart.find(c => String(c.id) === String(id));
 
-  x?x.qty++:cart.push({id,qty:1});
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({
+      id: id,
+      qty: 1
+    });
+  }
 
-  localStorage.setItem('sm_cart',JSON.stringify(cart));
+  saveCart();
   render();
 }
 
-function openCart(){
-  let total=0;
-  let html='<h2>🛒 Keranjang</h2>';
+function openCart() {
+  let total = 0;
 
-  html+=cart.length?
-    cart.map((c,i)=>{
-      let p=products.find(x=>x.id===c.id);
-      if(!p)return '';
+  let html = '<h2>🛒 Keranjang</h2>';
 
-      total+=p.price*c.qty;
+  const validCart = cart.filter(c =>
+    products.some(
+      p => String(p.id) === String(c.id)
+    )
+  );
 
-      return `
-        <div class="cartrow">
-          <div class="grow">
-            <b>${p.name}</b><br>
-            ${rp(p.price)} × ${c.qty}
+  html += validCart.length
+    ? validCart.map(c => {
+
+        const index = cart.indexOf(c);
+
+        const p = products.find(
+          x => String(x.id) === String(c.id)
+        );
+
+        if (!p) return '';
+
+        total +=
+          Number(p.price || 0) *
+          Number(c.qty || 0);
+
+        return `
+          <div class="cartrow">
+
+            <div class="grow">
+              <b>${p.name}</b><br>
+              ${rp(p.price)} × ${c.qty}
+            </div>
+
+            <button onclick="qty(${index}, -1)">
+              −
+            </button>
+
+            <button onclick="qty(${index}, 1)">
+              +
+            </button>
+
+            <button
+              class="danger"
+              onclick="removeC(${index})">
+              Hapus
+            </button>
+
           </div>
-          <button onclick="qty(${i},-1)">−</button>
-          <button onclick="qty(${i},1)">+</button>
-          <button class="danger" onclick="removeC(${i})">
-            Hapus
-          </button>
-        </div>
-      `;
-    }).join('')
-    :
-    '<p>Keranjang kosong.</p>';
+        `;
 
-  if(cart.length){
-    html+=`
-      <h3>Total ${rp(total)}</h3>
-      <button class="save"
-        onclick="alert('Checkout demo berhasil. Untuk pembayaran nyata, sambungkan payment gateway.');closeM()">
+      }).join('')
+
+    : '<p>Keranjang kosong.</p>';
+
+  if (validCart.length) {
+
+    html += `
+      <h3>
+        Total ${rp(total)}
+      </h3>
+
+      <button
+        class="save"
+        onclick="alert('Checkout demo berhasil. Untuk pembayaran nyata, sambungkan payment gateway.'); closeM()">
+
         Checkout Demo
+
       </button>
     `;
   }
@@ -105,49 +201,143 @@ function openCart(){
   show(html);
 }
 
-function qty(i,d){
-  cart[i].qty+=d;
+function qty(i, d) {
 
-  if(cart[i].qty<1)
-    cart.splice(i,1);
+  if (!cart[i]) return;
 
-  localStorage.setItem('sm_cart',JSON.stringify(cart));
+  cart[i].qty += d;
+
+  if (cart[i].qty < 1) {
+    cart.splice(i, 1);
+  }
+
+  saveCart();
+
   openCart();
+
   render();
 }
 
-function removeC(i){
-  cart.splice(i,1);
+function removeC(i) {
 
-  localStorage.setItem('sm_cart',JSON.stringify(cart));
+  if (!cart[i]) return;
+
+  cart.splice(i, 1);
+
+  saveCart();
+
   openCart();
+
   render();
 }
 
-function show(h){
-  document.getElementById('modalContent').innerHTML=h;
-  document.getElementById('modal').style.display='flex';
+function saveCart() {
+
+  localStorage.setItem(
+    'sm_cart',
+    JSON.stringify(cart)
+  );
 }
 
-function closeM(){
-  document.getElementById('modal').style.display='none';
+function show(html) {
+
+  const content =
+    document.getElementById('modalContent');
+
+  const modal =
+    document.getElementById('modal');
+
+  if (!content || !modal) return;
+
+  content.innerHTML = html;
+
+  modal.style.display = 'flex';
 }
 
-document.getElementById('cartBtn').onclick=openCart;
-document.getElementById('close').onclick=closeM;
-document.getElementById('searchBtn').onclick=render;
-document.getElementById('q').oninput=render;
+function closeM() {
 
-document.getElementById('shop').onclick=()=>{
-  document.querySelector('.products')
-    .scrollIntoView({behavior:'smooth'});
-};
+  const modal =
+    document.getElementById('modal');
 
-document.querySelectorAll('nav button').forEach(b=>{
-  b.onclick=()=>{
-    cat=b.dataset.cat;
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+function setupEvents() {
+
+  const cartBtn =
+    document.getElementById('cartBtn');
+
+  const closeBtn =
+    document.getElementById('close');
+
+  const searchBtn =
+    document.getElementById('searchBtn');
+
+  const q =
+    document.getElementById('q');
+
+  const shop =
+    document.getElementById('shop');
+
+  if (cartBtn) {
+    cartBtn.onclick = openCart;
+  }
+
+  if (closeBtn) {
+    closeBtn.onclick = closeM;
+  }
+
+  if (searchBtn) {
+    searchBtn.onclick = render;
+  }
+
+  if (q) {
+    q.oninput = render;
+  }
+
+  if (shop) {
+
+    shop.onclick = () => {
+
+      const productsSection =
+        document.querySelector('.products');
+
+      if (productsSection) {
+
+        productsSection.scrollIntoView({
+          behavior: 'smooth'
+        });
+
+      }
+    };
+  }
+
+  document
+    .querySelectorAll('nav button')
+    .forEach(button => {
+
+      button.onclick = () => {
+
+        cat =
+          button.dataset.cat || 'Semua';
+
+        render();
+      };
+
+    });
+}
+
+document.addEventListener(
+  'DOMContentLoaded',
+  () => {
+
+    setupEvents();
+
     render();
-  };
-});
 
-load();
+    load();
+
+  }
+);

@@ -25,14 +25,24 @@ function loginUI(){
 
       <h1>Admin SekolahMart</h1>
 
+      <p>Masuk menggunakan akun admin.</p>
+
       <div class="field">
         <label>Email</label>
-        <input id="email" type="email" placeholder="Email admin">
+        <input
+          id="email"
+          type="email"
+          placeholder="Email admin"
+        >
       </div>
 
       <div class="field">
         <label>Password</label>
-        <input id="password" type="password" placeholder="Password">
+        <input
+          id="password"
+          type="password"
+          placeholder="Password"
+        >
       </div>
 
       <button class="save" onclick="signIn()">
@@ -65,8 +75,8 @@ async function signIn(){
 
   const { error } =
     await sb.auth.signInWithPassword({
-      email,
-      password
+      email: email,
+      password: password
     });
 
   if(error){
@@ -127,7 +137,10 @@ async function load(){
 
   if(error){
 
-    alert('Gagal mengambil produk: ' + error.message);
+    alert(
+      'Gagal mengambil produk: ' +
+      error.message
+    );
 
     return;
   }
@@ -261,7 +274,8 @@ function form(p = {
       >
 
       <small>
-        Pilih foto dari HP. Maksimal 5 MB.
+        Pilih foto langsung dari HP.
+        Maksimal 5 MB.
         Jika tidak memilih foto baru,
         foto lama tetap digunakan.
       </small>
@@ -320,31 +334,29 @@ async function saveP(){
       : null;
 
 
-  // =============================
   // VALIDASI NAMA
-  // =============================
   if(!name){
 
-    alert('Nama produk wajib diisi.');
+    alert(
+      'Nama produk wajib diisi.'
+    );
 
     return;
   }
 
 
-  // =============================
   // VALIDASI HARGA
-  // =============================
   if(!price || price < 0){
 
-    alert('Harga produk tidak valid.');
+    alert(
+      'Harga produk tidak valid.'
+    );
 
     return;
   }
 
 
-  // =============================
-  // FOTO LAMA
-  // =============================
+  // GUNAKAN FOTO LAMA
   let image_url =
     editing?.image_url || '';
 
@@ -354,25 +366,26 @@ async function saveP(){
   // =============================
   if(file){
 
-    // Pastikan file gambar
     if(!file.type.startsWith('image/')){
 
-      alert('File harus berupa gambar.');
+      alert(
+        'File harus berupa gambar.'
+      );
 
       return;
     }
 
 
-    // Maksimal 5 MB
     if(file.size > 5 * 1024 * 1024){
 
-      alert('Ukuran foto maksimal 5 MB.');
+      alert(
+        'Ukuran foto maksimal 5 MB.'
+      );
 
       return;
     }
 
 
-    // Ambil ekstensi file
     const ext =
       file.name
         .split('.')
@@ -380,16 +393,13 @@ async function saveP(){
         .toLowerCase();
 
 
-    // Nama file unik
     const fileName =
       `${Date.now()}-${Math.random()
         .toString(36)
         .slice(2)}.${ext}`;
 
 
-    // ===========================
-    // UPLOAD KE SUPABASE STORAGE
-    // ===========================
+    // UPLOAD KE STORAGE
     const {
       error: uploadError
     } = await sb.storage
@@ -416,9 +426,7 @@ async function saveP(){
     }
 
 
-    // ===========================
     // AMBIL URL FOTO
-    // ===========================
     const {
       data: publicData
     } = sb.storage
@@ -454,32 +462,34 @@ async function saveP(){
 
 
   // =============================
-  // EDIT PRODUK
+  // EDIT
   // =============================
   if(editing?.id){
 
-    r = await sb
-      .from('products')
-      .update(row)
-      .eq('id', editing.id);
+    r =
+      await sb
+        .from('products')
+        .update(row)
+        .eq('id', editing.id);
 
   }
 
 
   // =============================
-  // TAMBAH PRODUK
+  // TAMBAH
   // =============================
   else{
 
-    r = await sb
-      .from('products')
-      .insert(row);
+    r =
+      await sb
+        .from('products')
+        .insert(row);
 
   }
 
 
   // =============================
-  // HASIL SIMPAN
+  // HASIL
   // =============================
   if(r.error){
 
@@ -488,19 +498,18 @@ async function saveP(){
       r.error.message
     );
 
+    return;
   }
 
-  else{
 
-    alert(
-      'Produk berhasil disimpan.'
-    );
+  alert(
+    'Produk berhasil disimpan.'
+  );
 
-    closeM();
 
-    load();
+  closeM();
 
-  }
+  load();
 
 }
 
@@ -535,7 +544,7 @@ function edit(id){
 
 
 // ===============================
-// HAPUS / NONAKTIFKAN PRODUK
+// HAPUS PRODUK
 // ===============================
 async function del(id){
 
@@ -565,7 +574,10 @@ async function del(id){
   }
 
 
-  alert('Produk berhasil dihapus.');
+  alert(
+    'Produk berhasil dihapus.'
+  );
+
 
   load();
 
@@ -591,7 +603,7 @@ document.getElementById('close')
 
 
 // ===============================
-// TOMBOL TAMBAH PRODUK
+// TOMBOL TAMBAH
 // ===============================
 document.getElementById('add')
   .onclick = () => form();
@@ -611,6 +623,6 @@ document.getElementById('logout')
 
 
 // ===============================
-// MULAI APLIKASI
+// MULAI
 // ===============================
 boot();

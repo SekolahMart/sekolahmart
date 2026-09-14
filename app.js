@@ -1,3 +1,5 @@
+let cat = 'Semua';
+let products = [];
 async function load(){
   const info = document.getElementById('info');
   const grid = document.getElementById('grid');
@@ -33,7 +35,7 @@ function render(){
   let q=(document.getElementById('q').value||'').toLowerCase();
 
   let a=products.filter(p=>
-    (cat==='Semua'||p.category===cat)&&
+    (err==='Semua'||p.category===cat)&&
     p.name.toLowerCase().includes(q)
   );
 

@@ -32,15 +32,15 @@ async function load(){
 function render(){
   let q=(document.getElementById('q').value||'').toLowerCase();
 
+function render(){
+  let q=(document.getElementById('q').value||'').toLowerCase();
+
   let a=products.filter(p=>
     (cat==='Semua'||p.category===cat)&&
     p.name.toLowerCase().includes(q)
   );
 
   document.getElementById('info').textContent=a.length+' produk';
-
-  document.getElementById('grid').innerHTML=
-    a.map(p=>`
       <article class="card">
         <img class="photo"
           src="${p.image_url||'assets/pensil_2b.jpg'}">

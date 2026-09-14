@@ -27,9 +27,6 @@ async function load(){
   info.textContent = 'Error koneksi: ' + error.message;
   grid.innerHTML = '<p>Gagal terhubung ke Supabase.</p>';
 }
-    info.textContent = 'Error koneksi: ' + err.message;
-    grid.innerHTML = '<p>Gagal terhubung ke Supabase.</p>';
-  }
 }
 
 function render(){

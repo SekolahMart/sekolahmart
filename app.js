@@ -1,25 +1,32 @@
-let products=[],cart=JSON.parse(localStorage.getItem('sm_cart')||'[]'),cat='Semua';
-
-const rp=n=>new Intl.NumberFormat('id-ID',{
-  style:'currency',
-  currency:'IDR',
-  maximumFractionDigits:0
-}).format(n);
-
 async function load(){
-  let {data,error}=await sb.from('products')
-    .select('*')
-    .eq('active',true)
-    .order('created_at',{ascending:false});
+  const info = document.getElementById('info');
+  const grid = document.getElementById('grid');
+  info.textContent = 'Memuat produk...';
+  try {
+    const { data, error } = await sb
+      .from('products')
+      .select('*')
+      .eq('active', true)
+      .order('created_at', { ascending: false });
 
-  if(error){
-    document.getElementById('grid').innerHTML=
-      '<p>Hubungkan Supabase di config.js terlebih dahulu.</p>';
-    return;
+    if (error) {
+      console.error('Supabase error:', error);
+      info.textContent = 'Error Supabase: ' + error.message;
+      grid.innerHTML = '<p>Gagal mengambil produk.</p>';
+      return;
+    }
+
+    products = data || [];
+
+    info.textContent = products.length + ' produk';
+
+    render();
+
+  } catch (err) {
+    console.error('Connection error:', err);
+    info.textContent = 'Error koneksi: ' + err.message;
+    grid.innerHTML = '<p>Gagal terhubung ke Supabase.</p>';
   }
-
-  products=data||[];
-  render();
 }
 
 function render(){

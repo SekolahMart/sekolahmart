@@ -22,10 +22,11 @@ async function load(){
 
     info.textContent = products.length + ' produk';
 
-    render();
-
-  } catch (err) {
-    console.error('Connection error:', err);
+    } catch (error) {
+  console.error('Connection error:', error);
+  info.textContent = 'Error koneksi: ' + error.message;
+  grid.innerHTML = '<p>Gagal terhubung ke Supabase.</p>';
+}
     info.textContent = 'Error koneksi: ' + err.message;
     grid.innerHTML = '<p>Gagal terhubung ke Supabase.</p>';
   }

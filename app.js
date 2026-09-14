@@ -36,7 +36,7 @@ function render(){
   let q=(document.getElementById('q').value||'').toLowerCase();
 
   let a=products.filter(p=>
-    (err==='Semua'||p.category===cat)&&
+    (cat==='Semua'||p.category===cat)&&
     p.name.toLowerCase().includes(q)
   );
 

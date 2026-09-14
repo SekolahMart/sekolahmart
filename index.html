@@ -1,0 +1,7 @@
+<!doctype html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SekolahMart</title><link rel="stylesheet" href="style.css"></head><body>
+<header><div class="head"><img src="assets/logo.png"><div class="search"><input id="q" placeholder="Cari produk sekolah..."><button id="searchBtn">Cari</button></div><button id="cartBtn">🛒 <b id="cartCount">0</b></button><a class="admin" href="admin.html">⚙ Admin</a></div><nav><button data-cat="Semua">Semua</button><button data-cat="Alat Tulis">Alat Tulis</button><button data-cat="Buku">Buku</button><button data-cat="Seragam">Seragam</button><button data-cat="Perlengkapan">Perlengkapan</button></nav></header>
+<main><section class="hero"><div><small>SEKOLAHMART</small><h1>Peralatan sekolah,<br><span>lebih mudah.</span></h1><p>Belanja kebutuhan sekolah dalam satu tempat.</p><button id="shop">Belanja Sekarang</button></div><div class="heroicons">📚 ✏️ 🎒</div></section>
+<section class="products"><h2>Produk Pilihan</h2><p id="info"></p><div id="grid" class="grid"></div></section></main>
+<div id="modal" class="modal"><div class="modalbox"><button class="x" id="close">✕</button><div id="modalContent"></div></div></div>
+<footer>SekolahMart • Website e-commerce peralatan sekolah © 2026</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="app.js"></script></body></html>
